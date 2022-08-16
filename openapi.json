@@ -7,28 +7,28 @@
   "servers": [
     {
       "url": "https://api.portal.idc.md/api/"
+    },
+    {
+      "url": "http://api.portal.idc.md/api/"
     }
   ],
   "tags": [
     {
-      "name": "главная",
+      "name": "general",
       "description": "Информация для отображения на главной странице"
     },
     {
       "name": "profile"
     },
     {
-      "name": "фильм"
-    },
-    {
-      "name": "жанр"
+      "name": "files"
     }
   ],
   "paths": {
     "/main": {
       "get": {
         "tags": [
-          "главная"
+          "general"
         ],
         "summary": "Получение информации для главной страницы",
         "description": "Отображение подборок и слайдеров на главной",
@@ -43,7 +43,7 @@
     "/listFilter": {
       "get": {
         "tags": [
-          "главная"
+          "general"
         ],
         "summary": "Список фильтров",
         "responses": {
@@ -62,26 +62,28 @@
         "description": "Вход в аккаунт",
         "operationId": "getToken",
         "requestBody": {
-          "description": "Вход с помощью  логина и пароля. В качестве логина может быть и email",
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Auth"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Успешная авторизация",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AuthOk"
+                "type": "object",
+                "properties": {
+                  "login": {
+                    "type": "string",
+                    "example": "000000"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "666666"
+                  }
                 }
               }
             }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешная авторизация"
           },
           "490": {
             "description": "Указанный логин/email не существует"
@@ -89,12 +91,22 @@
         }
       }
     },
-    "/getUserProfile": {
+    "/get_pass/{id}": {
       "get": {
         "tags": [
           "profile"
         ],
-        "summary": "получение данных пользователя",
+        "summary": "забыли пароль",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
         "responses": {
           "200": {
             "description": "Успешно"
@@ -105,12 +117,17 @@
         }
       }
     },
-    "/get_pass/:id": {
+    "/getUserProfile": {
       "get": {
         "tags": [
           "profile"
         ],
-        "summary": "забыли пароль",
+        "summary": "получение данных пользователя",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Успешно"
@@ -126,6 +143,11 @@
         "tags": [
           "profile"
         ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
         "summary": "выйти",
         "responses": {
           "200": {
@@ -136,6 +158,11 @@
     },
     "/unsubscription": {
       "get": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
         "tags": [
           "profile"
         ],
@@ -146,45 +173,375 @@
           }
         }
       }
-    }
-  },
-  "components": {
-    "schemas": {
-      "Auth": {
-        "type": "object",
-        "properties": {
-          "login": {
-            "type": "string",
-            "format": "string",
-            "example": "000000"
+    },
+    "/file/category/{cid}/{limit}": {
+      "get": {
+        "tags": [
+          "files"
+        ],
+        "summary": "для постраничного вывода - список filesов из категории",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "cid",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
           },
-          "password": {
-            "type": "string",
-            "format": "string",
-            "example": "666666"
+          {
+            "in": "path",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true,
+            "allowEmptyValue": true,
+            "example": 12
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешно"
           }
         }
-      },
-      "AuthOk": {
-        "type": "object",
-        "properties": {
-          "status": {
-            "type": "number",
-            "example": 200
+      }
+    },
+    "/file/{id}": {
+      "get": {
+        "tags": [
+          "files"
+        ],
+        "summary": "информация о файле",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          }
+        }
+      }
+    },
+    "/file/url/{id}": {
+      "get": {
+        "tags": [
+          "files"
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "id - номер серии !!! берётся из массива media в методе file",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          }
+        }
+      }
+    },
+    "/history/{limit}": {
+      "get": {
+        "tags": [
+          "files"
+        ],
+        "summary": "история просмотра",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true,
+            "allowEmptyValue": true,
+            "example": 12
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          }
+        }
+      }
+    },
+    "/bookmark/{limit}": {
+      "get": {
+        "tags": [
+          "files"
+        ],
+        "summary": "избранное",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true,
+            "allowEmptyValue": true,
+            "example": 12
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          }
+        }
+      }
+    },
+    "/bookmark/change/{id}": {
+      "get": {
+        "tags": [
+          "files"
+        ],
+        "summary": "добавить/удалить из избранного",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          }
+        }
+      }
+    },
+    "/like/{id}/{vote}": {
+      "get": {
+        "tags": [
+          "files"
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "id filesа, 0 - убрать голос, 1 дизлайк, 2 хз, 3 лайк",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
           },
-          "success": {
-            "type": "boolean"
-          },
-          "data": {
-            "type": "object",
-            "properties": {
-              "token": {
-                "type": "string",
-                "example": "варыловарылоарлыовр"
+          {
+            "in": "path",
+            "name": "vote",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          }
+        }
+      }
+    },
+    "/searchExt/{limit} ": {
+      "get": {
+        "tags": [
+          "general"
+        ],
+        "summary": "поиск ",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true,
+            "allowEmptyValue": true,
+            "example": 12
+          }
+        ],
+        "description": "country_list - список id стран через разделитель |genre_list - список id жанров через разделитель |year - год (по справочнику)query - часть названия filesа",
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          }
+        }
+      }
+    },
+    "/listGenre": {
+      "get": {
+        "tags": [
+          "general"
+        ],
+        "summary": "список жанров",
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          }
+        }
+      }
+    },
+    "/sendSMS": {
+      "post": {
+        "tags": [
+          "profile"
+        ],
+        "summary": "Запро отправить смс для подтверждения покупки подписки",
+        "operationId": "sendSms",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "phone": {
+                    "type": "number",
+                    "example": 77814920
+                  },
+                  "promo": {
+                    "type": "boolean",
+                    "example": true
+                  }
+                }
               }
             }
           }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          }
         }
+      }
+    },
+    "/checkSMS": {
+      "post": {
+        "tags": [
+          "profile"
+        ],
+        "summary": "Подтверждения - ввести код из смс",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "operationId": "checkSMS",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "number",
+                    "example": 999999
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          }
+        }
+      }
+    },
+    "/updatePassword": {
+      "post": {
+        "tags": [
+          "profile"
+        ],
+        "summary": "сменить пароль",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "operationId": "updatePassword",
+        "requestBody": {
+          "description": "Вход с помощью  логина и пароля. В качестве логина может быть и email",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "passwordOld": {
+                    "type": "string",
+                    "example": "999999"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "777777"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "HTTP-X-TOKEN"
       }
     }
   }
