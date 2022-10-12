@@ -346,6 +346,38 @@
         }
       }
     },
+    "/smartTV/active/{code}": {
+      "get": {
+        "tags": [
+          "settings"
+        ],
+        "summary": "активировать на смарт тв",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "code",
+            "description": "введите код с экрана телевизора",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "490": {
+            "description": "неправильный код"
+          }
+        }
+      }
+    },
     "/like/{id}/{vote}": {
       "get": {
         "tags": [
