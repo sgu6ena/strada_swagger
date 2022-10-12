@@ -3,7 +3,7 @@ window.onload = function() {
 
   // the following lines will be replaced by docker/configurator, when it runs in a docker-container
   window.ui = SwaggerUIBundle({
-    url: "https://raw.githubusercontent.com/sgu6ena/online-cinema-frontend/smart_2/public/openapi.json",
+    url: "https://sgu6ena.github.io/swagger/openapi.json",
     dom_id: '#swagger-ui',
     deepLinking: true,
     presets: [
